@@ -8,6 +8,7 @@ import {
   updateSurvey,
   deleteSurvey,
   getSurveyById,
+  getSurveyBySrNo,
 } from "../controllers/surveyController.js";
 
 const route = express.Router();
@@ -93,4 +94,10 @@ route.delete("/survey/:id", deleteSurvey);
 // DELETE Survey By Id Router
 // ***********************************************//
 route.get("/survey/:id", getSurveyById);
+// ***********************************************//
+// GET Survey by sr_no Router
+// ***********************************************//
+route.get("/sr_no/:sr_no", getSurveyBySrNo);
+
+
 export default route;

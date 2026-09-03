@@ -531,14 +531,33 @@ export const getSurveyById = async (req, res) => {
   try {
     const { id } = req.params;
     const data = await Survey.findById(id);
-    
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Survey Data fetched successfully.",
-        data,
-      });
+
+    res.status(200).json({
+      success: true,
+      message: "Survey Data fetched successfully.",
+      data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get survey by ID",
+      error: err.message,
+    });
+  }
+};
+// ***********************************************//
+//  GET One Survey Data by sr_no Here
+// ***********************************************//
+export const getSurveyBySrNo = async (req, res) => {
+  try {
+    const { sr_no} = req.params;
+    console.log(sr_no);
+    const data = await Survey.findOne({sr_no});
+     res.status(200).json({
+      success: true,
+      message: "Survey Data fetched successfully.",
+      data,
+    });
   } catch (err) {
     res.status(500).json({
       success: false,
