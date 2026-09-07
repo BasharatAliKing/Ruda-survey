@@ -16,6 +16,7 @@ const MONGO_URI =
 
 const allowedOrigins = [
   "https://ruda-survay.nespakprogresscenter.com",
+  "https://ruda-survay.jhjc.vercel.com",
   "https://api.ruda-surv.nespakprogresscenter.com",
   "http://localhost:5173"
 ];
