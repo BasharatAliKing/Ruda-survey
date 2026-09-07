@@ -15,7 +15,7 @@ const MONGO_URI =
   process.env.MONGO_URI 
 
 const allowedOrigins = [
-  "https://ruda-survey-jhjc.vercel.com",
+  "https://ruda-survey-jhjc.vercel.app",
   "https://ruda-survay.nespakprogresscenter.com",
   "https://api.ruda-surv.nespakprogresscenter.com",
   "http://localhost:5173"
