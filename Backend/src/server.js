@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import mongoose from "mongoose";
 import morgan from "morgan";
 const app = express();
@@ -13,8 +14,25 @@ import surveyRoute from "./routers/surveyRouter.js";
 const MONGO_URI =
   process.env.MONGO_URI 
 
+const allowedOrigins = [
+  "https://ruda-survay.nespakprogresscenter.com",
+  "https://api.ruda-surv.nespakprogresscenter.com",
+  "http://localhost:5173"
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 // Middleware
 app.use(morgan("dev")); 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/images", express.static("public/images"));

@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: #18323a;
+  background: #f4f8f7;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+body { margin: 0; min-width: 320px; background: #f4f8f7; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }

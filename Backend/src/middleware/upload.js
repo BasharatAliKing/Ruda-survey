@@ -1,34 +1,41 @@
+
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 
-
-/* ================= Survey PHOTOS ================= */
-const surveyPhotoStorage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, "../../public/images");
+    cb(null, "public/images");
+  },
 
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
 
-    cb(null, uploadPath); // ✅ FIXED (removed 8)
+export const upload = multer({ storage });
+
+// ***********************************************//
+// // Excel / CSV Storage
+// ***********************************************//
+
+const excelStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/excel");
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
-
-    cb(
-      null,
-      "survey-" + uniqueSuffix + path.extname(file.originalname)
-    );
-  }
+    cb(null, `${Date.now()}${path.extname(file.originalname)}`);
+  },
+});
+export const excelUpload = multer({
+  storage: excelStorage,
+  fileFilter: (req, file, cb) => {
+    const allowedExtensions = [".xlsx", ".xls", ".csv"];
+    const extension = path.extname(file.originalname).toLowerCase();
+    if (allowedExtensions.includes(extension)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only Excel (.xlsx, .xls) or CSV files are allowed"));
+    }
+  },
 });
 
-export const surveyPhotoUpload = multer({
-  storage: surveyPhotoStorage,
-  fileFilter: imageFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
-  }
-});

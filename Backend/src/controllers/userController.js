@@ -121,38 +121,82 @@ export const getUserById = async (req, res) => {
 //****************************************** */
 // DELETE User by ID
 //****************************************** */
-export const deleteUserById = async (req,res)=>{
-    try{
-        const {id} = req.params;
-        const user = await User.findByIdAndDelete(id);
-        res.status(200).json({
-            success:true,
-            message:"User Deleted Successfully."
-        });
-    }catch(err){
-        res.status(500).json({
-            success:false,
-            message:err.message
-        })
+export const deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    res.status(200).json({
+      success: true,
+      message: "User Deleted Successfully.",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+//****************************************** */
+// UPDATE User by ID
+//****************************************** */
+export const updateUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_name, email, password, role } = req.body;
+
+    // Check if user exists
+    const existingUser = await User.findById(id);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
-}
-export const updateUserById = async (req,res)=>{
-    try{
-        const {id}= req.params;
-        const user = req.body;
-        const updatedUser = await User.findByIdAndUpdate(id,
-             user,
-          //  {new:true}
-        )
-        res.status(200).json({
-            success:true,
-            message:"User Updated Successfully.",
-            user,
+
+    // Check if email is already used by another user
+    if (email && email !== existingUser.email) {
+      const emailExists = await User.findOne({
+        email,
+        _id: { $ne: id },
+      });
+
+      if (emailExists) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already exists.",
         });
-    }catch(err){
-         res.status(500).json({
-            success:false,
-            message:err.message
-        })
+      }
     }
-}
+
+    // Prepare update data
+    const updateData = {
+      user_name,
+      email,
+      role,
+    };
+
+    // Hash password only if a new password is provided
+    if (password) {
+      const saltRounds = 10;
+      updateData.password = await bcrypt.hash(password, saltRounds);
+    }
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      message: "User Updated Successfully.",
+      user: updatedUser,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};

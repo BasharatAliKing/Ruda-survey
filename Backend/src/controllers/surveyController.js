@@ -261,7 +261,7 @@ export const getAllSurveys = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Surveys data fetched Successfully.",
-      data,
+      data, 
     });
   } catch (error) {
     res.status(500).json({

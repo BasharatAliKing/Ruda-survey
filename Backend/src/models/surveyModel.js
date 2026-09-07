@@ -77,7 +77,11 @@ const surveySchema = new mongoose.Schema({
   imgTwo:{
     type:String,
   }
-});
+}, { timestamps: true });
+
+surveySchema.index({ sr_no: 1 });
+surveySchema.index({ village: 1, status: 1 });
+surveySchema.index({ "identification.owner_name": 1 });
 
 // create model for survey
 

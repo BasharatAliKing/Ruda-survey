@@ -5,11 +5,13 @@ const userSchema = new mongoose.Schema({
     user_name:{
         type:String,
         required:true,
+        trim:true,
     },
     email:{
         type:String,
         required:true,
-     //   unique:true,
+        trim:true,
+        lowercase:true,
     },
     password:{
         type:String,
@@ -20,7 +22,9 @@ const userSchema = new mongoose.Schema({
         default:"user",
         enum:["user","admin"],
     },
-});
+}, { timestamps: true });
+
+userSchema.index({ email: 1 });
 
 // model
 const User = mongoose.model("user",userSchema);
