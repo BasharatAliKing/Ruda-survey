@@ -160,16 +160,17 @@ export const importSurveysFromExcel = async (req, res) => {
 // ***********************************************//
 export const createSurvey = async (req, res) => {
   try {
-    // ***********************************************//
-    // 1. Get normal form fields
-    // ***********************************************//
+    const totalSurveys = await Survey.countDocuments();
+
+    const autoSrNo = totalSurveys + 1;
+
+    // Get normal form fields
     const {
       sr_no,
       parcel_id,
       rd,
       pkg,
       village,
-
       // Identification
       owner_name,
       f_name,
@@ -191,18 +192,16 @@ export const createSurvey = async (req, res) => {
       nature_of_construction,
     } = req.body;
 
-    // ***********************************************//
-    // 2. Get uploaded files
-    // ***********************************************//
+    //Get uploaded files
+
     const imgOne = req.files?.imgOne?.[0];
     const imgTwo = req.files?.imgTwo?.[0];
     const landOwnerDoc = req.files?.land_owner_doc?.[0];
 
-    // ***********************************************//
-    // 3. Create survey
-    // ***********************************************//
+    // Create survey
+
     const survey = await Survey.create({
-      sr_no: Number(sr_no),
+      sr_no: autoSrNo,
       parcel_id,
       rd,
       pkg,
@@ -219,7 +218,9 @@ export const createSurvey = async (req, res) => {
         cnic,
         khasra_no,
         phone,
-        land_owner_doc: `/images/${landOwnerDoc.filename}`,
+        land_owner_doc: landOwnerDoc
+          ? `/images/${landOwnerDoc.filename}`
+          : null,
         electricity_connection_name,
         land_area,
       },
@@ -234,8 +235,9 @@ export const createSurvey = async (req, res) => {
       },
       nature_of_construction,
       // Images
-      imgOne: `/images/${imgOne.filename}`,
-      imgTwo: `/images/${imgTwo.filename}`,
+      imgOne: imgOne ? `/images/${imgOne.filename}` : null,
+
+      imgTwo: imgTwo ? `/images/${imgTwo.filename}` : null,
     });
 
     return res.status(201).json({
@@ -261,7 +263,7 @@ export const getAllSurveys = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Surveys data fetched Successfully.",
-      data, 
+      data,
     });
   } catch (error) {
     res.status(500).json({
@@ -274,16 +276,13 @@ export const getAllSurveys = async (req, res) => {
 // ***********************************************//
 // Update Survey
 // ***********************************************//
-
 export const updateSurvey = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ***********************************************//
-    //   Check if survey exists
-    // ***********************************************//
-
+    // Check if survey exists
     const survey = await Survey.findById(id);
+
     if (!survey) {
       return res.status(404).json({
         success: false,
@@ -291,9 +290,32 @@ export const updateSurvey = async (req, res) => {
       });
     }
 
-    // ***********************************************//
+    // --------------------------------------------------
+    // Helper function to delete uploaded file
+    // --------------------------------------------------
+    const deleteFile = (filePath) => {
+      if (!filePath) return;
+
+      // Convert:
+      // /images/example.jpg
+      // to:
+      // public/images/example.jpg
+
+      const fullPath = path.join(
+        process.cwd(),
+        "public",
+        filePath.replace(/^\/+/, ""),
+      );
+
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+        console.log("Deleted old file:", fullPath);
+      }
+    };
+
+    // --------------------------------------------------
     // Get form fields
-    // ***********************************************//
+    // --------------------------------------------------
 
     const {
       sr_no,
@@ -301,9 +323,11 @@ export const updateSurvey = async (req, res) => {
       rd,
       pkg,
       village,
+
       // Coordinates
       lat,
       lng,
+
       // Identification
       owner_name,
       f_name,
@@ -316,26 +340,25 @@ export const updateSurvey = async (req, res) => {
       // Other
       status,
       stractural_name,
+      nature_of_construction,
 
       // Covered area
       length,
       width,
       area,
-
-      nature_of_construction,
     } = req.body;
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Get uploaded files
-    // ***********************************************//
+    // --------------------------------------------------
 
     const imgOne = req.files?.imgOne?.[0];
     const imgTwo = req.files?.imgTwo?.[0];
     const landOwnerDoc = req.files?.land_owner_doc?.[0];
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Update normal fields
-    // ***********************************************//
+    // --------------------------------------------------
 
     if (sr_no !== undefined) {
       survey.sr_no = Number(sr_no);
@@ -357,9 +380,9 @@ export const updateSurvey = async (req, res) => {
       survey.village = village;
     }
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Update coordinates
-    // ***********************************************//
+    // --------------------------------------------------
 
     if (lat !== undefined) {
       survey.coordinates.lat = Number(lat);
@@ -369,9 +392,9 @@ export const updateSurvey = async (req, res) => {
       survey.coordinates.lng = Number(lng);
     }
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Update identification
-    // ***********************************************//
+    // --------------------------------------------------
 
     if (owner_name !== undefined) {
       survey.identification.owner_name = owner_name;
@@ -402,9 +425,9 @@ export const updateSurvey = async (req, res) => {
       survey.identification.land_area = land_area;
     }
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Update other fields
-    // ***********************************************//
+    // --------------------------------------------------
 
     if (status !== undefined) {
       survey.status = status;
@@ -418,9 +441,9 @@ export const updateSurvey = async (req, res) => {
       survey.nature_of_construction = nature_of_construction;
     }
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Update covered area
-    // ***********************************************//
+    // --------------------------------------------------
 
     if (length !== undefined) {
       survey.covered_area.length = length;
@@ -434,29 +457,45 @@ export const updateSurvey = async (req, res) => {
       survey.covered_area.area = area;
     }
 
-    // ***********************************************//
-    // Update images if new files are uploaded
-    // ***********************************************//
+    // ==================================================
+    // UPDATE IMAGE 1
+    // ==================================================
 
     if (imgOne) {
+      // Delete OLD image first
+      deleteFile(survey.imgOne);
+
+      // Save NEW image path
       survey.imgOne = `/images/${imgOne.filename}`;
     }
 
+    // ==================================================
+    // UPDATE IMAGE 2
+    // ==================================================
+
     if (imgTwo) {
+      // Delete OLD image first
+      deleteFile(survey.imgTwo);
+
+      // Save NEW image path
       survey.imgTwo = `/images/${imgTwo.filename}`;
     }
 
-    // ***********************************************//
-    // Update PDF if new PDF is uploaded
-    // ***********************************************//
+    // ==================================================
+    // UPDATE LAND OWNER DOCUMENT
+    // ==================================================
 
     if (landOwnerDoc) {
+      // Delete OLD document first
+      deleteFile(survey.identification?.land_owner_doc);
+
+      // Save NEW document path
       survey.identification.land_owner_doc = `/images/${landOwnerDoc.filename}`;
     }
 
-    // ***********************************************//
+    // --------------------------------------------------
     // Save updated survey
-    // ***********************************************//
+    // --------------------------------------------------
 
     const updatedSurvey = await survey.save();
 
@@ -550,10 +589,10 @@ export const getSurveyById = async (req, res) => {
 // ***********************************************//
 export const getSurveyBySrNo = async (req, res) => {
   try {
-    const { sr_no} = req.params;
+    const { sr_no } = req.params;
     console.log(sr_no);
-    const data = await Survey.findOne({sr_no});
-     res.status(200).json({
+    const data = await Survey.findOne({ sr_no });
+    res.status(200).json({
       success: true,
       message: "Survey Data fetched successfully.",
       data,

@@ -318,7 +318,7 @@ function Surveys() {
         onClose={() => setModalOpen(false)}
         onSave={saveSurvey}
         editingSurvey={editingSurvey}
-      />
+      /> 
       <ViewModal isOpen={Boolean(viewingSurvey)} onClose={() => setViewingSurvey(null)} type="survey" record={viewingSurvey} />
     </div>
   );
