@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileUp, MapPin, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Eye, FileUp, MapPin, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import SurveyModal from "../components/surveys/SurveyModal";
+import ViewModal from "../components/ViewModal";
 import { api } from "../lib/api";
 
 function Surveys() {
@@ -15,6 +16,7 @@ function Surveys() {
   const [error, setError] = useState("");
   const [editingSurvey, setEditingSurvey] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [viewingSurvey, setViewingSurvey] = useState(null);
   const importRef = useRef(null);
 
   const loadSurveys = async () => {
@@ -257,6 +259,9 @@ function Surveys() {
                           )}
                         </td>
                         <td className="align-right">
+                          <button className="icon-button icon-blue" title="View" aria-label="View survey" onClick={() => setViewingSurvey(survey)}>
+                            <Eye size={17} />
+                          </button>
                           <button
                             className="icon-button icon-blue"
                             title="Edit"
@@ -314,6 +319,7 @@ function Surveys() {
         onSave={saveSurvey}
         editingSurvey={editingSurvey}
       />
+      <ViewModal isOpen={Boolean(viewingSurvey)} onClose={() => setViewingSurvey(null)} type="survey" record={viewingSurvey} />
     </div>
   );
 }

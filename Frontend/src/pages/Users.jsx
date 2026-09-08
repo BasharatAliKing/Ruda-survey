@@ -4,12 +4,14 @@ import {
   Search,
   Pencil,
   Trash2,
+  Eye,
   Users as UsersIcon,
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import UserModal from "../components/users/UserModal";
+import ViewModal from "../components/ViewModal";
 import { api } from "../lib/api";
 
 function Users() {
@@ -22,6 +24,7 @@ function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [editingUser, setEditingUser] = useState(null);
+  const [viewingUser, setViewingUser] = useState(null);
 
   useEffect(() => { api.getUsers().then((payload) => setUsers(payload.users || [])).catch((err) => setError(err.message)).finally(() => setLoading(false)); }, []);
 
@@ -195,6 +198,9 @@ function Users() {
                         {/* Actions */}
                         <td className="align-right">
                           <div className="flex justify-end gap-2">
+                            <button onClick={() => setViewingUser(user)} className="icon-button icon-blue" title="View" aria-label="View user">
+                              <Eye size={18} />
+                            </button>
                             <button
                               onClick={() => handleEditUser(user)} className="icon-button icon-blue"
                               title="Edit"
@@ -227,6 +233,7 @@ function Users() {
         onSave={handleSaveUser}
         editingUser={editingUser}
       />
+      <ViewModal isOpen={Boolean(viewingUser)} onClose={() => setViewingUser(null)} type="user" record={viewingUser} />
     </div>
   );
 }
