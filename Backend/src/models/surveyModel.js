@@ -50,7 +50,7 @@ const surveySchema = new mongoose.Schema({
   status:{
     type:String,
     default:"",
-    enum:["residential","commercial","agri","deras","other",""],
+    enum:["residential","commercial","cattle_farm","agricultural","empty_plot","under_construction","agri","deras","other",""],
   },
   stractural_name:{
     type:String,
